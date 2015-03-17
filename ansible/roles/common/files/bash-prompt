@@ -1,0 +1,22 @@
+function prompt_command {
+	 DNSNAME=`dnsdomainname`
+
+	 # set the title bars for xterm and screen
+	 case $TERM in
+	     xterm*)
+		 printf "\033]0;%s@%s:%s\007" "${USER}" "${HOSTNAME%%.*}.${DNSNAME%%.*}" "${PWD/#$HOME/~}"
+		 ;;
+	     screen)
+		 printf "\033]0;%s@%s:%s\033\\" "${USER}" "${HOSTNAME%%.*}.${DNSNAME%%.*}" "${PWD/#$HOME/~}"
+		 ;;
+	     esac
+
+	 # set the prompt string
+	 export PS1="${USER}@${HOSTNAME%%.*}.${DNSNAME%%.*}:${PWD/#$HOME/~}\$ "
+
+	 # write history from mem buffer to $HISTFILE
+ 	 history -a
+}
+export HISTFILE=~/.bash_history
+export HISTSIZE=10000
+export PROMPT_COMMAND=prompt_command

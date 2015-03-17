@@ -1,0 +1,87 @@
+# Copyright 2015 47Lining LLC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+#  - name: install common pacakages
+#    yum: name={{item}} state=installed
+#    sudo: true
+#    with_items:
+#      - python26-setuptools
+#    when: ansible_os_family == "RedHat"
+
+  - name: set hostname
+    hostname: name={{hostvars[inventory_hostname]["ec2_tag_Name"]}}
+    sudo: true
+    register: hostname
+
+  - name: ensure localhost is in /etc/hosts
+    lineinfile:
+      dest=/etc/hosts
+      state=present
+      backup=yes
+      regexp='^127\.0\.0\.1'
+      line="127.0.0.1 localhost localhost.localdomain"
+    sudo: true
+    register: hostsfile1
+
+  - name: "add {{ hostvars[inventory_hostname]['ec2_tag_Name'] }} to /etc/hosts"
+    lineinfile:
+      dest=/etc/hosts
+      state=present
+      backup=yes
+      regexp='{{ hostvars[inventory_hostname]['ec2_tag_Name'] }}$'
+      insertafter=EOF
+      line="{{ hostvars[inventory_hostname]['ec2_private_ip_address'] }} {{ hostvars[inventory_hostname]['ec2_tag_Name'] }}"
+    sudo: true
+    register: hostsfile2
+
+  - name: ensure this instance can cope with lots of spikey and concurrent sshd connections
+    lineinfile:
+      dest=/etc/ssh/sshd_config
+      state=present
+      backup=yes
+      regexp='^#?MaxStartups'
+      line='MaxStartups 200'
+    sudo: true
+    register: max_startups
+
+  - name: restart sshd
+    service: name=sshd state=restarted
+    sudo: true
+    when: max_startups.changed
+
+  - name: install updates
+    yum: name="*" state=latest
+    sudo: true
+    async: 7200
+    poll: 10
+
+  - name: copy bash command prompt setup
+    copy: src=bash-prompt dest=~/.bash-prompt
+
+  - name: set bash command prompt
+    lineinfile: dest="~/.bashrc" line=". ~/.bash-prompt"
+
+  - name: set MTU to 1500 on eth0 to avoid ssh comms issues
+    lineinfile:
+      dest=/etc/rc.d/rc.local
+      regexp="^/sbin/ip link set dev eth0 mtu"
+      line="/sbin/ip link set dev eth0 mtu 1500"
+      insertafter="EOF"
+    sudo: yes
+    register: mtu
+
+  - name: restart instance when changed
+    include: reboot.yml
+    when: hostname.changed or hostsfile1.changed or hostsfile2.changed or mtu.changed

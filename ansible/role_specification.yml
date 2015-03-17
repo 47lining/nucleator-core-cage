@@ -1,0 +1,187 @@
+# Copyright 2015 47Lining LLC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+role_specification:
+  - role_name: NucleatorCageServiceRunner
+    trust_policy:
+      Version : "2008-10-17"
+      Statement :
+        - Effect : Allow
+          Sid : NucleatorCageServiceRunnerTrustPolicy
+          Principal :
+            Service : ec2.amazonaws.com
+          Action : sts:AssumeRole
+    access_policies:
+  - role_name: NucleatorCageProvisioner
+    trust_policy:
+      Version : "2008-10-17"
+      Statement :
+        - Effect : Allow
+          Sid : NucleatorCageProvisionerTrustPolicy
+          Principal :
+            AWS : "arn:aws:iam::{{ aws_accounts[cage_names['build']['account']]['account_number'] }}:role/NucleatorAgent"
+          Action : sts:AssumeRole
+    access_policies:
+      - policy_name: NucleatorCageProvisionerAccessPolicy
+        policy_document:
+          Statement :
+            - Effect : Allow
+              Action: 
+                - "cloudformation:CreateStack"
+                - "cloudformation:UpdateStack"
+                - "cloudformation:DescribeStacks"
+                - "cloudformation:DescribeStackEvents"
+              Resource: arn:aws:cloudformation:*
+            - Effect: Allow
+              Action:
+                - "s3:ListBucket"
+                - "s3:PutObject"
+                - "s3:GetObject"
+              Resource: arn:aws:s3:::*
+            - Effect: Allow
+              Action: 
+                - "ec2:DescribeKeyPairs"
+                - "ec2:CreateKeyPair"
+                - "ec2:CreateInternetGateway"
+                - "ec2:CreateVPC"
+                - "ec2:DescribeInternetGateways"
+                - "ec2:DescribeVPCs"
+                - "ec2:CreateTags"
+                - "ec2:ModifyVpcAttribute"
+                - "ec2:CreateSubnet"
+                - "ec2:CreateRouteTable"
+                - "ec2:CreateNetworkAcl"
+                - "ec2:CreateNetworkAclEntry"
+                - "ec2:CreateSecurityGroup"
+                - "ec2:CreateRoute"
+                - "ec2:AttachInternetGateway"
+                - "ec2:DescribeRouteTables"
+                - "ec2:DescribeSubnets"
+                - "ec2:DescribeNetworkAcls"
+                - "ec2:DescribeSecurityGroups"
+                - "ec2:RevokeSecurityGroupEgress"
+                - "ec2:AuthorizeSecurityGroupIngress"
+                - "ec2:AuthorizeSecurityGroupEgress"
+                - "ec2:AllocateAddress"
+                - "ec2:AssociateAddress"
+                - "ec2:ReplaceNetworkAclAssociation"
+                - "ec2:AssociateRouteTable"
+                - "ec2:DescribeAddresses"
+                - "ec2:RunInstances"
+                - "ec2:ModifyInstanceAttribute"
+                - "ec2:DescribeInstances"
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - "rds:CreateDBSubnetGroup"
+                - "rds:DescribeDBSubnetGroups"
+                - "rds:ModifyDBSubnetGroup"
+              Resource: arn:aws:rds:*
+            - Effect: Allow
+              Action:
+                - "iam:CreateInstanceProfile"
+                - "iam:AddRoleToInstanceProfile"
+                - "iam:PassRole"
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - "route53:ListHostedZones"
+                - "route53:ChangeResourceRecordSets"
+                - "route53:GetChange"
+              Resource: '*'
+  - role_name: NucleatorCageInventoryManager
+    trust_policy:
+      Version : "2008-10-17"
+      Statement :
+        - Effect : Allow
+          Sid : NucleatorCageInventoryManagerTrustPolicy
+          Principal :
+            AWS : "arn:aws:iam::{{ aws_accounts[cage_names['build']['account']]['account_number'] }}:role/NucleatorAgent"
+          Action : sts:AssumeRole
+    access_policies:
+      - policy_name: NucleatorCageInventoryMangerAccessPolicy
+        policy_document:
+          Statement :
+            - Effect : Allow
+              Action: 
+                - "ec2:DescribeInstances"
+                - "ec2:DescribeVolumes"
+                - "ec2:DescribeSnapshots"  
+                - "ec2:StopInstances"
+                - "ec2:StartInstances"
+                - "ec2:CreateTags"
+                - "ec2:DescribeTags"
+              Resource: '*'
+  - role_name: NucleatorCageDeleter
+    trust_policy:
+      Version : "2008-10-17"
+      Statement :
+        - Effect : Allow
+          Sid : NucleatorCageDeleterTrustPolicy
+          Principal :
+            AWS : "arn:aws:iam::{{ aws_accounts[cage_names['build']['account']]['account_number'] }}:role/NucleatorAgent"
+          Action : sts:AssumeRole
+    access_policies:
+      - policy_name: NucleatorCageDeleterAccessPolicy
+        policy_document:
+          Statement :
+            - Effect : Allow
+              Action: 
+                - "cloudformation:DescribeStacks"
+                - "cloudformation:DeleteStack"
+                - "cloudformation:DescribeStackEvents"
+              Resource: arn:aws:cloudformation:*
+            - Effect: Allow
+              Action:
+                - "iam:RemoveRoleFromInstanceProfile"
+                - "iam:DeleteInstanceProfile"
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - "ec2:TerminateInstances"
+                - "ec2:DeleteVpc"
+                - "ec2:DeleteSecurityGroup"
+                - "ec2:DeleteSubnet"
+                - "ec2:DeleteInternetGateway"
+                - "ec2:DeleteNetworkAcl"
+                - "ec2:DetachInternetGateway"
+                - "ec2:DeleteNetworkAclEntry"
+                - "ec2:DeleteRouteTable"
+                - "ec2:DescribeAddresses"
+                - "ec2:DescribeNetworkAcls"
+                - "ec2:DeleteRoute"
+                - "ec2:DeleteDBSubnetGroup"
+                - "ec2:DisassociateRouteTable"
+                - "ec2:DescribeInstances"
+                - "ec2:ReleaseAddress"
+                - "ec2:DescribeInternetGateways"
+                - "ec2:DescribeRouteTables"
+                - "ec2:DescribeSubnets"
+                - "ec2:DescribeVPCs"
+                - "ec2:ReplaceNetworkAclAssociation"
+                - "ec2:DisassociateAddress"
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - "route53:ListHostedZones"
+                - "route53:ChangeResourceRecordSets"
+                - "route53:GetChange"
+                - "route53:ListResourceRecordSets"
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - "rds:DeleteDBSubnetGroup"
+                - "rds:DescribeDBSubnetGroups"
+              Resource: arn:aws:rds:*

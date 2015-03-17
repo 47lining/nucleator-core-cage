@@ -1,0 +1,221 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Bootstrap an AWS Virtual Private Cloud.  Create the VPC, public subnets in redundant availability zones, internet gateway, private application subnets in redundant availability zones, database private subnets in redundant availability zones, public subnet group, private application subnet group, database subnet group, routes and network ACLs.  Instantiate instances for bastion and nat hosts",
+    "Parameters": {
+        "SSHFrom": {
+            "Description": "SSH access to bastion host will be restricted to this CIDR (default: can be accessed from anywhere)",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/xf."
+        },
+        "KeypairName": {
+            "Description": "Name of an existing EC2 KeyPair to enable build SSH access to all resulting instances",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "255",
+            "AllowedPattern": "[\\x20-\\x7E]*",
+            "ConstraintDescription": "can contain only ASCII characters."
+        },
+        "BastionInstanceType": {
+            "Description": "Bastion Host EC2 instance type",
+            "Type": "String",
+            "Default": {{default_ec2_instance_type|to_json}},
+            "AllowedValues": {{ supported_ec2_instance_types|to_json }},
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "NatInstanceType": {
+            "Description": "NAT Host EC2 instance type",
+            "Type": "String",
+            "Default": {{default_ec2_instance_type|to_json}},
+            "AllowedValues": {{ supported_ec2_instance_types|to_json }},
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "ServiceRole": {
+            "Type": "String",
+            "Description": "Name of the Role to use to establish an Instance Profile to associate with the instance"
+        }
+    },
+    "Resources": {
+	"Vpc": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "{{template_s3_accessor_url}}/vpc.json",
+		"Parameters": {
+		    "SSHFrom": {
+			"Ref": "SSHFrom"
+		    },
+		    "KeypairName": {
+			"Ref": "KeypairName"
+		    },
+		    "BastionInstanceType": {
+			"Ref": "BastionInstanceType"
+		    },
+		    "NatInstanceType": {
+			"Ref": "NatInstanceType"
+		    },
+		    "ServiceRole": {
+			"Ref": "ServiceRole"
+		    }
+		}
+	    }
+	}
+    },
+    "Outputs": {
+        "VpcId": {
+            "Description": "ID of the VPC created for this cage",
+            "Value": {
+                "Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.VpcId"
+		]
+            }
+        },
+        "NatSecurityGroupId": {
+            "Description": "ID of the NAT Security Group.  Use this to add ingress rules for instances and beanstalks in the private subnet.",
+            "Value": {
+                "Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.NatSecurityGroupId"
+		]
+            }
+        },
+        "BastionSecurityGroupId": {
+            "Description": "ID of the Bastion Security Group.  Use this as a source security group to enable ssh from bastion to instances and beanstalks in the private subnet.",
+            "Value": {
+                "Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.BastionSecurityGroupId"
+		]
+            }
+        },
+        "PublicSubnet1Id": {
+            "Description": "ID of the first redundant public subnet",
+            "Value": {
+                "Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.PublicSubnet1Id"
+		]
+            }
+        },
+        "PublicSubnet2Id": {
+            "Description": "ID of the second redundant public subnet",
+            "Value": {
+                "Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.PublicSubnet2Id"
+		]
+            }
+        },
+	"PublicSubnet1Az": {
+            "Description": "Availability zone in which the first public subnet resides",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.PublicSubnet1Az"
+		]
+            }
+	},
+	"PublicSubnet2Az": {
+            "Description": "Availability zone in which the second public subnet resides",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.PublicSubnet2Az"
+		]
+            }
+	},
+        "PrivateSubnet1Id": {
+            "Description": "ID of the first redundant private application subnet",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.PrivateSubnet1Id"
+		]
+            }
+        },
+        "PrivateSubnet2Id": {
+            "Description": "ID of the second redundant private application subnet",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.PrivateSubnet2Id"
+		]
+            }
+        },
+	"PrivateSubnet1Az": {
+            "Description": "Availability zone in which the first private subnet resides",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.PrivateSubnet1Az"
+		]
+            }
+	},
+	"PrivateSubnet2Az": {
+            "Description": "Availability zone in which the second private subnet resides",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.PrivateSubnet2Az"
+		]
+            }
+	},
+        "DatabaseSubnet1Id": {
+            "Description": "ID of database subnet1",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.DatabaseSubnet1Id"
+		]
+            }
+        },
+        "DatabaseSubnet2Id": {
+            "Description": "ID of the private subnet",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.DatabaseSubnet2Id"
+		]
+            }
+        },
+	"DatabaseSubnet1Az": {
+            "Description": "Availability zone in which the first database subnet resides",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.DatabaseSubnet1Az"
+		]
+            }
+	},
+	"DatabaseSubnet2Az": {
+            "Description": "Availability zone in which the second database subnet resides",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.DatabaseSubnet2Az"
+		]
+            }
+	},
+        "DatabaseSubnetGroupId": {
+            "Description": "ID of the database subnet group",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.DatabaseSubnetGroupId"
+		]
+            }
+        },
+        "BastionIp": {
+            "Description": "IP Address of the Bastion host",
+            "Value": {
+		"Fn::GetAtt": [
+		    "Vpc",
+		    "Outputs.BastionIp"
+		]
+            }
+        }
+    }
+}

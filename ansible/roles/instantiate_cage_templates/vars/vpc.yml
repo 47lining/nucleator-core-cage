@@ -1,0 +1,129 @@
+# Copyright 2015 47Lining LLC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+bastion_public_ip: '{ "Ref": "BastionIpAddress" }'
+
+nat_security_group_ingress:
+
+  SecurityGroupIngress:
+
+    # allow ssh to NAT from bastion instance(s)
+    - IpProtocol: "tcp"
+      FromPort: "22"
+      ToPort: "22"
+      SourceSecurityGroupId:
+        Ref: "BastionSecurityGroup"
+
+    # outbound ssh via NAT requires inbound ssh to NAT from private subnet instances
+    - IpProtocol: "tcp"
+      FromPort: "22"
+      ToPort: "22"
+      CidrIp: '{{ network_topology["private_cidr"] }}'
+
+    # outbound FTP via NAT requires inbound FTP to NAT from private subnet instances
+    - IpProtocol: "tcp"
+      FromPort: "21"
+      ToPort: "21"
+      CidrIp: '{{ network_topology["private_cidr"] }}'
+
+    # outbound HTTP via NAT requires inbound HTTP to NAT from private subnet instances
+    - IpProtocol: "tcp"
+      FromPort: "80"
+      ToPort: "80"
+      CidrIp: '{{ network_topology["private_cidr"] }}'
+
+    # outbound HTTPS via NAT requires inbound HTTPS to NAT from private subnet instances
+    - IpProtocol: "tcp"
+      FromPort: "443"
+      ToPort: "443"
+      CidrIp: '{{ network_topology["private_cidr"] }}'
+
+    # outbound DNS resolution via NAT requires
+    # inbound DNS requests to NAT from private subnet instances
+    - IpProtocol: "tcp"
+      FromPort: "53"
+      ToPort: "53"
+      CidrIp: '{{ network_topology["private_cidr"] }}'
+
+    # git protocols to NAT from private subnet instances
+    # git uses port 9418 for the native git protocol
+    - IpProtocol: "tcp"
+      FromPort: "9418"
+      ToPort: "9418"
+      CidrIp: '{{ network_topology["private_cidr"] }}'
+
+    # git protocols to NAT from private subnet instances
+    # 47lining stash uses port 7999 for ssh clones
+    - IpProtocol: "tcp"
+      FromPort: "7999"
+      ToPort: "7999"
+      CidrIp: '{{ network_topology["private_cidr"] }}'
+
+    # common web access ports to NAT from private subnet instances
+    - IpProtocol: "tcp"
+      FromPort: "8081"
+      ToPort: "8081"
+      CidrIp: '{{ network_topology["private_cidr"] }}'
+
+nat_security_group_egress:
+
+  SecurityGroupEgress:
+
+    # outbound ssh - must be enabled to bastion servers provisioned in multiple cages
+    - IpProtocol: "tcp"
+      FromPort: "22"
+      ToPort: "22"
+      CidrIp: "0.0.0.0/0"
+
+    # outbound FTP to internet hosts
+    - IpProtocol: "tcp"
+      FromPort: "21"
+      ToPort: "21"
+      CidrIp: "0.0.0.0/0"
+
+    # outbound HTTP to internet hosts
+    - IpProtocol: "tcp"
+      FromPort: "80"
+      ToPort: "80"
+      CidrIp: "0.0.0.0/0"
+
+    # outbound HTTPS to internet hosts
+    - IpProtocol: "tcp"
+      FromPort: "443"
+      ToPort: "443"
+      CidrIp: "0.0.0.0/0"
+
+    # outbound DNS, only to AWS-provided DNS
+    - IpProtocol: "tcp"
+      FromPort: "53"
+      ToPort: "53"
+      CidrIp: '{{ network_topology["awsdns_cidr"] }}'
+
+    # outbound native git protocol to internet hosts
+    - IpProtocol: "tcp"
+      FromPort: "9418"
+      ToPort: "9418"
+      CidrIp: "0.0.0.0/0"
+
+    # outbound 47lining stash ssh to 47lining stash, wherever it may live
+    - IpProtocol: "tcp"
+      FromPort: "7999"
+      ToPort: "7999"
+      CidrIp: "0.0.0.0/0"
+
+    # outbound 47lining nucleator to 47lining artifactory, wherever it may live
+    - IpProtocol: "tcp"
+      FromPort: "8081"
+      ToPort: "8081"
+      CidrIp: "0.0.0.0/0"

@@ -1,0 +1,124 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create a nucleator compute instance with appropriate tags and specified name, instance type, ami, ssh key, subnet, and security group",
+    "Parameters": {
+        "InstanceName": {
+            "Description": "Name Tag for the instance",
+            "Type": "String"
+        },
+        "NucleatorGroup": {
+            "Description": "Name of the nucleator group that the instance should assume",
+            "Type": "String"
+        },
+        "InstanceType": {
+            "Description": "AWS EC2 Instance Type for the instance",
+            "Type": "String"
+        },
+        "KeypairName": {
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+            "Type": "String"
+        },
+        "ImageId": {
+            "Type": "String",
+            "Description": "AMI You want to use"
+        },
+        "ServiceRole": {
+            "Type": "CommaDelimitedList",
+            "Description": "Comma delimited list of the Role Names to use to establish an Instance Profile to associate with the instance"
+        },
+        "SourceDestCheck": {
+            "Description": "Will the instance perform source / destination checking",
+            "Type": "String",
+            "Default": "true"
+        },
+        "SubnetId": {
+            "Type": "String",
+            "Description": "SubnetId of an existing subnet in your Virtual Private Cloud (VPC)"
+        },
+        "SecurityGroupId": {
+            "Type": "String",
+            "Description": "SecurityGroup to use"
+        }
+    },
+    "Resources": {
+    	"InstanceProfile" : {
+	    "Type" : "AWS::IAM::InstanceProfile",
+	    "Properties" : {
+		"Path" : "/",
+		"Roles" : { "Ref": "ServiceRole" }
+	    }
+	},
+        "Ec2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "SourceDestCheck": {
+                    "Ref": "SourceDestCheck"
+                },
+                "ImageId": {
+                    "Ref": "ImageId"
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupId"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "SubnetId"
+                },
+                "KeyName": {
+                    "Ref": "KeypairName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    },
+                    {
+                        "Key": "NucleatorGroup",
+                        "Value": {
+                            "Ref": "NucleatorGroup"
+                        }
+                    },
+		    {{ nucleator_common_tags | to_json_fragment }}
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "InstanceId": {
+            "Value": {
+                "Ref": "Ec2Instance"
+            },
+            "Description": "Instance Id of newly created instance"
+        }, 
+        "PrivateIp": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "Ec2Instance",
+                    "PrivateIp"
+                ]
+            },
+            "Description": "Private IP of newly created instance"
+        },
+        "Subnet": {
+            "Value": {
+                "Ref": "SubnetId"
+            },
+            "Description": "Subnet of instance"
+        },
+        "SecurityGroupId": {
+            "Value": {
+                "Ref": "SecurityGroupId"
+            },
+            "Description": "Security Group of instance"
+        }
+    }
+}
