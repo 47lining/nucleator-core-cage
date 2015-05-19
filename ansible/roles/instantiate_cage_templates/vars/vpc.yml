@@ -31,12 +31,6 @@ nat_security_group_ingress:
       ToPort: "22"
       CidrIp: '{{ network_topology["private_cidr"] }}'
 
-    # outbound FTP via NAT requires inbound FTP to NAT from private subnet instances
-    - IpProtocol: "tcp"
-      FromPort: "21"
-      ToPort: "21"
-      CidrIp: '{{ network_topology["private_cidr"] }}'
-
     # outbound HTTP via NAT requires inbound HTTP to NAT from private subnet instances
     - IpProtocol: "tcp"
       FromPort: "80"
@@ -84,12 +78,6 @@ nat_security_group_egress:
     - IpProtocol: "tcp"
       FromPort: "22"
       ToPort: "22"
-      CidrIp: "0.0.0.0/0"
-
-    # outbound FTP to internet hosts
-    - IpProtocol: "tcp"
-      FromPort: "21"
-      ToPort: "21"
       CidrIp: "0.0.0.0/0"
 
     # outbound HTTP to internet hosts
