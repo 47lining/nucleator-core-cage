@@ -1041,6 +1041,24 @@
                 "Ref": "BastionSecurityGroup"
             }
         },
+        "PublicNetworkAclId": {
+            "Description": "ID of the Cage's Public Network ACL",
+            "Value": {
+                "Ref": "PublicNetwokAcl"
+            }
+        },
+        "PrivateNetworkAclId": {
+            "Description": "ID of the Cage's Private Network ACL",
+            "Value": {
+                "Ref": "PrivateNetwokAcl"
+            }
+        },
+        "DatabaseNetworkAclId": {
+            "Description": "ID of the Cage's Database Network ACL",
+            "Value": {
+                "Ref": "DatabaseNetwokAcl"
+            }
+        },
         "PublicSubnet1Id": {
             "Description": "ID of the first redundant public subnet",
             "Value": {

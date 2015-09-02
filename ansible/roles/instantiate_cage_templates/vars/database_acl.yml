@@ -51,6 +51,16 @@ database_acl:
         PortRange:
           From: 3306
           To: 3306
+    - name: InboundRedshiftDbNeworkAclEntry
+      properties:
+        RuleNumber: 105
+        Protocol: 6 #tcp
+        RuleAction: allow
+        CidrBlock: '{{ network_topology.vpc_cidr }}'
+        PortRange:
+          From: 5439
+          To: 5439
+
 
   outbound_entries:
     - name: OutboundDbNetworkAclEntry
