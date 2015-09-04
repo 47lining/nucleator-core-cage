@@ -59,13 +59,27 @@
   - name: restart sshd
     service: name=sshd state=restarted
     sudo: true
-    when: max_startups.changed
+    when: max_startups.changed and ansible_os_family == "RedHat"
+
+  - name: restart sshd
+#    service: name=sshd state=restarted
+    command: service ssh restart
+    sudo: true
+    when: max_startups.changed and ansible_os_family == "Debian"
 
   - name: install updates
     yum: name="*" state=latest
     sudo: true
     async: 7200
     poll: 10
+    when: ansible_os_family == "RedHat"
+
+  - name: install updates
+    apt: upgrade=dist
+    sudo: true
+    async: 7200
+    poll: 10
+    when: ansible_os_family == "Debian"
 
   - name: copy bash command prompt setup
     copy: src=bash-prompt dest=~/.bash-prompt
@@ -73,9 +87,13 @@
   - name: set bash command prompt
     lineinfile: dest="~/.bashrc" line=". ~/.bash-prompt"
 
+  - name: set startup file
+    set_fact:
+      rcfile: '{{ "/etc/rc.d/rc.local" if ansible_os_family == "RedHat" else "/etc/rc.local" }}'
+
   - name: set MTU to 1500 on eth0 to avoid ssh comms issues
     lineinfile:
-      dest=/etc/rc.d/rc.local
+      dest={{ rcfile }}
       regexp="^/sbin/ip link set dev eth0 mtu"
       line="/sbin/ip link set dev eth0 mtu 1500"
       insertafter="EOF"
