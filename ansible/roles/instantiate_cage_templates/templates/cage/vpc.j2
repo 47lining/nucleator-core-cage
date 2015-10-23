@@ -269,7 +269,26 @@
                 ]
             }
         },
-
+	{% set rule_counter = [NUCLEATOR_CAGE_CIDR_WHITELIST_INITIAL_RULENUM] %}
+	{% for entry in public_acl.inbound_whitelist_entries %}
+	{% set cidr_counter=0 %}
+	{% for whitelist_cidr in NUCLEATOR_CAGE_CIDR_WHITELIST %}
+	"{{entry.name}}{{cidr_counter}}" : {
+            "Type": "AWS::EC2::NetworkAclEntry",
+            "Properties": {
+                "NetworkAclId": {
+                    "Ref": "PublicNetworkAcl"
+                },
+                "Egress": "false",
+		"RuleNumber": {{rule_counter[-1]}},
+		"CidrBlock": "{{whitelist_cidr}}",
+		{{entry.properties | to_json_fragment}}
+            }
+        },
+	{% if rule_counter.append(rule_counter[-1]+1) %}{% endif %}
+	{% set cidr_counter = cidr_counter + 1 %}
+	{% endfor %}
+	{% endfor %}
 	{% for entry in public_acl.inbound_entries %}
 	"{{entry.name}}" : {
             "Type": "AWS::EC2::NetworkAclEntry",
@@ -278,9 +297,11 @@
                     "Ref": "PublicNetworkAcl"
                 },
                 "Egress": "false",
+		"RuleNumber": {{rule_counter[-1]}},
 		{{entry.properties | to_json_fragment}}
             }
         },
+	{% if rule_counter.append(rule_counter[-1]+1) %}{% endif %}
 	{% endfor %}
 
 	{% for entry in public_acl.outbound_entries %}

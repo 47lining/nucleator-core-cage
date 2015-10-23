@@ -20,7 +20,7 @@ private_acl:
 #        RuleNumber: 100
 #        Protocol: 6
 #        RuleAction: allow #tcp
-#        CidrBlock: 0.0.0.0/0
+#        CidrBlock: '{{ network_topology.vpc_cidr }}'
 #        PortRange:
 #          From: 21
 #          To: 21
@@ -29,7 +29,7 @@ private_acl:
         RuleNumber: 101
         Protocol: 6 #tcp
         RuleAction: allow
-        CidrBlock: 0.0.0.0/0
+        CidrBlock: '{{ network_topology.vpc_cidr }}'
         PortRange:
           From: 80
           To: 80
