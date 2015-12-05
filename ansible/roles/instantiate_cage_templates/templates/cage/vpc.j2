@@ -45,6 +45,63 @@
         "AWSRegionArch2NatAMI": {{ map_aws_region_plus_arch_to_public_nat_ami|to_json }}
     },
     "Resources": {
+
+{# Establish a Nucleator-maintained logging bucket in this region #}
+	"ElbLoggingBucket" : {
+	    "Type" : "AWS::S3::Bucket",
+	    "Metadata" : { "DocString" :
+			   "S3 Bucket used by Nucleator to store logs from elastic loadbalancers in Nucleator Stacksets." },
+	    "Properties" : {
+		"BucketName" : "elb-{{nucleator_logging_bucketname_specification}}-{{cage_name}}",
+		"Tags": [
+		    { "Key": "Name", "Value": "elb-{{nucleator_logging_bucketname_specification}}-{{cage_name}}" },
+		    { "Key": "NucleatorGroup", "Value": "nucleatorElbLogging" },
+		    {{ nucleator_common_tags | to_json_fragment }}
+		]
+	    },
+	    "DeletionPolicy" : "Retain"
+	},
+
+	"ElbLoggingBucketPolicy" : {
+	    "Type" : "AWS::S3::BucketPolicy",
+	    "Metadata" : { "DocString" :
+			   "Policy that permits AWS ELB Service to put logging information into the ELB Logging Bucket" },
+	    "Properties" : {
+		"Bucket" : {
+		    "Ref": "ElbLoggingBucket"
+		},
+		"PolicyDocument": {
+		    "Version": "2008-10-17",
+		    "Id": "ElbLoggingBucketPolicy-{{nucleator_logging_bucketname_specification}}-{{cage_name}}",
+		    "Statement": [
+			{
+			    "Sid": "AwsPut-{{nucleator_logging_bucketname_specification}}-{{cage_name}}",
+			    "Effect": "Allow",
+			    "Principal": {
+				"AWS": [
+				    "127311923021",
+				    "027434742980",
+				    "797873946194",
+				    "156460612806",
+				    "054676820928",
+				    "582318560864",
+				    "114774131450",
+				    "783225319266",
+				    "507241528517"
+				]
+			    },
+			    "Action": [
+				"s3:PutObject"
+			    ],
+			    "Resource": "arn:aws:s3:::elb-{{nucleator_logging_bucketname_specification}}-{{cage_name}}/*"
+			}
+		    ]
+		}
+	    }
+	},
+{% set region_counter = region_counter + 1 %}
+{% endfor %}
+
         "VPC": {
             "Type": "AWS::EC2::VPC",
             "Properties": {
