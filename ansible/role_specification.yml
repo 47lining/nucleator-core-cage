@@ -46,6 +46,8 @@ role_specification:
               Resource: arn:aws:cloudformation:*
             - Effect: Allow
               Action:
+                - "s3:CreateBucket"
+                - "s3:PutBucketPolicy"
                 - "s3:ListBucket"
                 - "s3:PutObject"
                 - "s3:GetObject"
