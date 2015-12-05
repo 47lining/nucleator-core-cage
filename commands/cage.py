@@ -68,8 +68,11 @@ class Cage(Command):
         cli = Command.get_cli(kwargs)
         cage = kwargs.get("cage", None)
         customer = kwargs.get("customer", None)
+        create_bucket = kwargs.get("create_bucket", None)
         if cage is None or customer is None:
             raise ValueError("cage and customer must be specified")
+        if create_bucket is None:
+            raise ValueError("Internal Error: create_bucket is None but should have been set by parser")
         extra_vars={
             "cage_name": cage,
             "customer_name": customer,
