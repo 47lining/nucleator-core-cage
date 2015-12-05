@@ -27,3 +27,4 @@
   vars:
     cage_name: "{{cage_name}}"
     customer_name: "{{customer_name}}"
+    create_bucket: "{{create_bucket}}"

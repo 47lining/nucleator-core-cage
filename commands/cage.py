@@ -41,6 +41,9 @@ class Cage(Command):
         cage_provision=cage_subparsers.add_parser('provision', help="provision a new cage")
         cage_provision.add_argument("--customer", required=True, action=ValidateCustomerAction, help="Name of customer from nucleator config")
         cage_provision.add_argument("--cage", required=True, help="Name of cage from nucleator config")
+        cage_provision.add_argument("--create-bucket", dest='create_bucket', required=False, action='store_true', help="Name of cage from nucleator config")
+        cage_provision.add_argument("--no-create-bucket", dest='create_bucket', required=False, action='store_false', help="Name of cage from nucleator config")
+        parser.set_defaults(create_bucket=True)
 
         # configure subcommand
         cage_configure=cage_subparsers.add_parser('configure', help="configure a new cage")
@@ -70,6 +73,7 @@ class Cage(Command):
         extra_vars={
             "cage_name": cage,
             "customer_name": customer,
+            "create_bucket": create_bucket,
             "verbosity": kwargs.get("verbosity", None),
         }
 

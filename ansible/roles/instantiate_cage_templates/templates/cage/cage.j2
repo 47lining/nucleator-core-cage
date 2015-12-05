@@ -12,7 +12,7 @@
             "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/xf."
         },
         "KeypairName": {
-            "Description": "Name of an existing EC2 KeyPair to enable build SSH access to all resulting instances",
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access via bastion to all resulting instances",
             "Type": "String",
             "MinLength": "1",
             "MaxLength": "255",
@@ -36,7 +36,12 @@
         "ServiceRole": {
             "Type": "String",
             "Description": "Name of the Role to use to establish an Instance Profile to associate with the instance"
-        }
+        },
+	"CreateBucket": {
+	    "Type": "String",
+	    "Default": "False",
+	    "Description": "Set to 'True' to create Elb Logging S3 Bucket & Policy."
+	}	
     },
     "Resources": {
 	"Vpc": {
@@ -58,6 +63,9 @@
 		    },
 		    "ServiceRole": {
 			"Ref": "ServiceRole"
+		    },
+		    "CreateBucket": {
+			"Ref": "CreateBucket"
 		    }
 		}
 	    }

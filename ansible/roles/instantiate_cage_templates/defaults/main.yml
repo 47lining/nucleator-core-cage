@@ -24,7 +24,8 @@
 # in your whitelist.
 #
 NUCLEATOR_CAGE_CIDR_WHITELIST:
-  - 0.0.0.0/0    # Override with values in ~/.nucleator/config.yml
+  - 0.0.0.0/0    # Override with values in siteconfig {{customer}}.yml or
+                 # values in ~/.nucleator/config.yml
 
 # When CIDR_WHITELIST changes, special care must be taken not to:
 #
