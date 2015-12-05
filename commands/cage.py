@@ -43,7 +43,7 @@ class Cage(Command):
         cage_provision.add_argument("--cage", required=True, help="Name of cage from nucleator config")
         cage_provision.add_argument("--create-bucket", dest='create_bucket', required=False, action='store_true', help="Name of cage from nucleator config")
         cage_provision.add_argument("--no-create-bucket", dest='create_bucket', required=False, action='store_false', help="Name of cage from nucleator config")
-        cage_provision.set_defaults(create_bucket=True)
+        cage_provision.set_defaults(create_bucket=False)
 
         # configure subcommand
         cage_configure=cage_subparsers.add_parser('configure', help="configure a new cage")
@@ -52,7 +52,7 @@ class Cage(Command):
         cage_configure.add_argument("--limit-stackset", required=False, help="Limit configuration to hosts associated with any instance of specified Stackset")
         cage_configure.add_argument("--limit-stackset-instance", required=False, action=LimitStacksetInstanceAction, help="Limit configuration to hosts associated with specified instance of specified Stackset.  Requires prior specification of --limit-stackset.")
         cage_configure.add_argument("--list-hosts", required=False, action='store_true', help="List entailed hosts and stop, do not configure hosts")
-        cage_configure.add_argument("--restart-nat", required=False, action='store_true', help="Stop all NAT instances, then stat them again, prior to configuration")
+        cage_configure.add_argument("--restart-nat", required=False, action='store_true', help="Stop all NAT instances, then start them again, prior to configuration")
         cage_configure.set_defaults(list_hosts=False)
         cage_configure.set_defaults(restart_nat=False)
 
