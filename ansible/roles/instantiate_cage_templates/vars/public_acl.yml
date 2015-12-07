@@ -72,7 +72,7 @@ public_acl:
           "Fn::Join":
             - "/"
             -
-              - "Ref": "BastionIp"
+              - "Ref": "BastionIpAddress"
               - "32"
         PortRange:
           From: 80
