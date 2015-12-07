@@ -108,15 +108,6 @@
             },
             "Description": "Private IP of newly created instance"
         },
-        "PublicIp": {
-            "Value": {
-                "Fn::GetAtt": [
-                    "Ec2Instance",
-                    "PublicIp"
-                ]
-            },
-            "Description": "Public IP of newly created instance"
-        },
         "Subnet": {
             "Value": {
                 "Ref": "SubnetId"

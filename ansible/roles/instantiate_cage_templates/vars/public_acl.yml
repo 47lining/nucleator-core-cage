@@ -68,7 +68,12 @@ public_acl:
       properties:
         Protocol: 6 #tcp
         RuleAction: allow
-        CidrBlock: '{ "Fn::Join": [ "/", [ { "Fn::GetAtt": [ "BastionInstance", "Outputs.PublicIp" ] }, "32" ] ] }'
+        CidrBlock:
+          "Fn::Join":
+            - "/"
+            -
+              - "Ref": "BastionIp"
+              - "32"
         PortRange:
           From: 80
           To: 80
