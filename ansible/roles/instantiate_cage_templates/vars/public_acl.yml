@@ -64,6 +64,14 @@ public_acl:
         PortRange:
           From: 80
           To: 80
+    - name: InboundHttpBastionNetworkAclEntry
+      properties:
+        Protocol: 6 #tcp
+        RuleAction: allow
+        CidrBlock: '{ "Fn::Join": [ "/", [ { "Fn::GetAtt": [ "BastionInstance", "Outputs.PublicIp" ] }, "32" ] ] }'
+        PortRange:
+          From: 80
+          To: 80
     - name: InboundHttpsPublicNetworkAclEntry
       properties:
         Protocol: 6 #tcp
