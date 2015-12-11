@@ -89,6 +89,7 @@ class Cage(Command):
         cli.obtain_credentials(commands = command_list, cage=cage, customer=customer, verbosity=kwargs.get("verbosity", None))
         
         return cli.safe_playbook(self.get_command_playbook("cage_provision.yml"),
+                                 is_static=True, # do not use dynamic inventory script, credentials may not be available
                                  **extra_vars
         )
         
