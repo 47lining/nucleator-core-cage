@@ -69,6 +69,7 @@ role_specification:
                 - "ec2:ReplaceNetworkAclEntry"
                 - "ec2:DeleteNetworkAclEntry"
                 - "ec2:CreateSecurityGroup"
+                - "ec2:DeleteSecurityGroup"
                 - "ec2:CreateRoute"
                 - "ec2:AttachInternetGateway"
                 - "ec2:DescribeRouteTables"
