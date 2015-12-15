@@ -1042,51 +1042,23 @@
         "BastionSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
-                "GroupDescription": "Enable ssh access to / from the Bastion host",
+                "GroupDescription": "Enable access to / from the Bastion host",
                 "VpcId": {
                     "Ref": "VPC"
                 },
                 "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "CidrIp": {
-                            "Ref": "SSHFrom"
-                        }
-                    }
+		    {% for entry in bastion_cidr_whitelist_ingress_rules %}
+		    {% set outer_loop = loop %}
+		    {% for whitelist_cidr in NUCLEATOR_CAGE_CIDR_WHITELIST %}
+		    {
+			"CidrIp": "{{whitelist_cidr}}",
+			{{entry|to_json_fragment}}
+		    }{{"" if loop.last and outer_loop.last else ","}}
+		    {% endfor %}
+		    {% endfor %}
                 ],
                 "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "CidrIp": "{{ network_topology["vpc_cidr"] }}"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "80",
-                        "ToPort": "80",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "443",
-                        "ToPort": "443",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "udp",
-                        "FromPort": "53",
-                        "ToPort": "53",
-                        "CidrIp": "{{ network_topology["vpc_cidr"] }}"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "9418",
-                        "ToPort": "9418",
-                        "CidrIp": "0.0.0.0/0"
-                    }
+		    {{bastion_egress_rules|to_json_fragment}}
                 ],
                 "Tags": [
                     {

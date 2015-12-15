@@ -1,0 +1,32 @@
+bastion_cidr_whitelist_ingress_rules:
+  # ssh
+  - IpProtocol: tcp
+    FromPort: 22
+    ToPort: 22
+
+bastion_egress_rules:
+  # ssh
+  - IpProtocol: tcp
+    FromPort: 22
+    ToPort: 22
+    CidrIp: "{{ network_topology["vpc_cidr"] }}"
+  # http
+  - IpProtocol: tcp
+    FromPort: 80
+    ToPort: 80
+    CidrIp: "0.0.0.0/0"
+  # https
+  - IpProtocol: tcp
+    FromPort: 443
+    ToPort: 443
+    CidrIp: "0.0.0.0/0"
+  # dns
+  - IpProtocol: udp
+    FromPort: 53
+    ToPort: 53
+    CidrIp: "{{ network_topology["vpc_cidr"] }}"
+  # git protocol
+  - IpProtocol: tcp
+    FromPort: 9418
+    ToPort: 9418
+    CidrIp: "0.0.0.0/0"
