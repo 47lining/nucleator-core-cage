@@ -52,12 +52,12 @@ public_acl:
 
   inbound_whitelist_openvpn_entries:
     - name: InboundOpenVPNPublicNetworkAclEntry
-       properties:
-         Protocol: 17 #udp
-         RuleAction: allow
-         PortRange:
-           From: 1194
-           To: 1194
+      properties:
+        Protocol: 17 #udp
+        RuleAction: allow
+        PortRange:
+          From: 1194
+          To: 1194
 
   # inbound entries are added after inbound whitelist entries
   # "CidrBlock" is as specified here.
