@@ -336,7 +336,7 @@
         },
 	{% if not NUCLEATOR_CAGE_REMOVE_INBOUND_PUBLIC_RULES %}
 	{% set rule_counter = [NUCLEATOR_CAGE_CIDR_WHITELIST_INITIAL_RULENUM] %}
-	{% for entry in public_acl.inbound_whitelist_entries %}
+	{% for entry in public_acl.inbound_whitelist_entries if not NUCLEATOR_CAGE_OPENVPN_ENABLED else (public_acl.inbound_whitelist_entries|list + public_acl.inbound_whitelist_openvpn_entries|list) %}
 	{% set cidr_counter=0 %}
 	{% for whitelist_cidr in NUCLEATOR_CAGE_CIDR_WHITELIST %}
 	"{{entry.name}}{{cidr_counter}}" : {
