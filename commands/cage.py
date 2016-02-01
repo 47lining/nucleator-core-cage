@@ -25,9 +25,9 @@ class LimitStacksetInstanceAction(argparse.Action):
             setattr(namespace,self.dest,values)
 
 class Cage(Command):
-    
+
     name = "cage"
-    
+
     def parser_init(self, subparsers):
         """
         Initialize parsers for this command.
@@ -81,23 +81,23 @@ class Cage(Command):
         }
 
         extra_vars["cage_deleting"]=kwargs.get("cage_deleting", False)
-        
+
         command_list = []
         command_list.append("account")
         command_list.append("cage")
 
         cli.obtain_credentials(commands = command_list, cage=cage, customer=customer, verbosity=kwargs.get("verbosity", None))
-        
+
         return cli.safe_playbook(self.get_command_playbook("cage_provision.yml"),
                                  is_static=True, # do not use dynamic inventory script, credentials may not be available
                                  **extra_vars
         )
-        
+
     def configure(self, **kwargs):
         """
-        Configure instances within a provisioned Cage, potentially including all of 
-        its provisioned Stacksets.  Configure instances across all Stacksets, or 
-        limit to to specified Stackset types 
+        Configure instances within a provisioned Cage, potentially including all of
+        its provisioned Stacksets.  Configure instances across all Stacksets, or
+        limit to to specified Stackset types
         """
         cli = Command.get_cli(kwargs)
         cage = kwargs.get("cage", None)
@@ -139,7 +139,8 @@ class Cage(Command):
         This command deletes a previously provisioned Nucleator Cage.
         """
         kwargs["cage_deleting"]=True
+        kwargs["create_bucket"]=False
         return self.provision(**kwargs)
-        
+
 # Create the singleton for auto-discovery
 command = Cage()
