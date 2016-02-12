@@ -36,7 +36,15 @@
         "ServiceRole": {
             "Type": "String",
             "Description": "Name of the Role to use to establish an Instance Profile to associate with the instance"
-        }
+        },
+	"CreateBucket": {
+	    "Type": "String",
+	    "Default": "False",
+	    "Description": "Set to 'True' to create Elb Logging S3 Bucket & Policy."
+	}	
+    },
+    "Conditions": {
+	"CreateBucketCondition": {"Fn::Equals": [{"Ref": "CreateBucket"}, "True"]}
     },
     "Mappings": {
         "AZMap": {{ aws_accounts[account_name]["map_region_plus_redundant_zone_number_to_vpc_valid_az"] | to_json }},
@@ -45,6 +53,63 @@
         "AWSRegionArch2NatAMI": {{ map_aws_region_plus_arch_to_public_nat_ami|to_json }}
     },
     "Resources": {
+
+{# Establish a Nucleator-maintained logging bucket in this region #}
+	"ElbLoggingBucket" : {
+	    "Type" : "AWS::S3::Bucket",
+	    "Metadata" : { "DocString" :
+			   "S3 Bucket used by Nucleator to store logs from elastic loadbalancers in Nucleator Stacksets." },
+	    "Condition" : "CreateBucketCondition",
+	    "DeletionPolicy" : "Retain",
+	    "Properties" : {
+		"BucketName" : "elb-{{nucleator_logging_bucketname_specification}}-{{cage_name}}",
+		"Tags": [
+		    { "Key": "Name", "Value": "elb-{{nucleator_logging_bucketname_specification}}-{{cage_name}}" },
+		    { "Key": "NucleatorGroup", "Value": "nucleatorElbLogging" },
+		    {{ nucleator_common_tags | to_json_fragment }}
+		]
+	    }
+	},
+
+	"ElbLoggingBucketPolicy" : {
+	    "Type" : "AWS::S3::BucketPolicy",
+	    "Metadata" : { "DocString" :
+			   "Policy that permits AWS ELB Service to put logging information into the ELB Logging Bucket" },
+	    "Condition" : "CreateBucketCondition",
+	    "DeletionPolicy" : "Retain",
+	    "Properties" : {
+		"Bucket" : {
+		    "Ref": "ElbLoggingBucket"
+		},
+		"PolicyDocument": {
+		    "Version": "2008-10-17",
+		    "Id": "ElbLoggingBucketPolicy-{{nucleator_logging_bucketname_specification}}-{{cage_name}}",
+		    "Statement": [
+			{
+			    "Sid": "AwsPut-{{nucleator_logging_bucketname_specification}}-{{cage_name}}",
+			    "Effect": "Allow",
+			    "Principal": {
+				"AWS": [
+				    "127311923021",
+				    "027434742980",
+				    "797873946194",
+				    "156460612806",
+				    "054676820928",
+				    "582318560864",
+				    "114774131450",
+				    "783225319266",
+				    "507241528517"
+				]
+			    },
+			    "Action": [
+				"s3:PutObject"
+			    ],
+			    "Resource": "arn:aws:s3:::elb-{{nucleator_logging_bucketname_specification}}-{{cage_name}}/*"
+			}
+		    ]
+		}
+	    }
+	},
         "VPC": {
             "Type": "AWS::EC2::VPC",
             "Properties": {
@@ -269,7 +334,27 @@
                 ]
             }
         },
-
+	{% if not NUCLEATOR_CAGE_REMOVE_INBOUND_PUBLIC_RULES %}
+	{% set rule_counter = [NUCLEATOR_CAGE_CIDR_WHITELIST_INITIAL_RULENUM] %}
+	{% for entry in (public_acl.inbound_whitelist_entries if not NUCLEATOR_CAGE_OPENVPN_ENABLED else (public_acl.inbound_whitelist_entries|list + public_acl.inbound_whitelist_openvpn_entries|list)) %}
+	{% set cidr_counter=0 %}
+	{% for whitelist_cidr in NUCLEATOR_CAGE_CIDR_WHITELIST %}
+	"{{entry.name}}{{cidr_counter}}" : {
+            "Type": "AWS::EC2::NetworkAclEntry",
+            "Properties": {
+                "NetworkAclId": {
+                    "Ref": "PublicNetworkAcl"
+                },
+                "Egress": "false",
+		"RuleNumber": {{rule_counter[-1]}},
+		"CidrBlock": "{{whitelist_cidr}}",
+		{{entry.properties | to_json_fragment}}
+            }
+        },
+	{% if rule_counter.append(rule_counter[-1]+1) %}{% endif %}
+	{% set cidr_counter = cidr_counter + 1 %}
+	{% endfor %}
+	{% endfor %}
 	{% for entry in public_acl.inbound_entries %}
 	"{{entry.name}}" : {
             "Type": "AWS::EC2::NetworkAclEntry",
@@ -278,10 +363,13 @@
                     "Ref": "PublicNetworkAcl"
                 },
                 "Egress": "false",
+		"RuleNumber": {{rule_counter[-1]}},
 		{{entry.properties | to_json_fragment}}
             }
         },
+	{% if rule_counter.append(rule_counter[-1]+1) %}{% endif %}
 	{% endfor %}
+	{% endif %}
 
 	{% for entry in public_acl.outbound_entries %}
 	"{{entry.name}}" : {
@@ -954,51 +1042,23 @@
         "BastionSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
-                "GroupDescription": "Enable ssh access to / from the Bastion host",
+                "GroupDescription": "Enable access to / from the Bastion host",
                 "VpcId": {
                     "Ref": "VPC"
                 },
                 "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "CidrIp": {
-                            "Ref": "SSHFrom"
-                        }
-                    }
+		    {% for entry in bastion_cidr_whitelist_ingress_rules %}
+		    {% set outer_loop = loop %}
+		    {% for whitelist_cidr in NUCLEATOR_CAGE_CIDR_WHITELIST %}
+		    {
+			"CidrIp": "{{whitelist_cidr}}",
+			{{entry|to_json_fragment}}
+		    }{{"" if loop.last and outer_loop.last else ","}}
+		    {% endfor %}
+		    {% endfor %}
                 ],
                 "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "CidrIp": "{{ network_topology["vpc_cidr"] }}"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "80",
-                        "ToPort": "80",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "443",
-                        "ToPort": "443",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "udp",
-                        "FromPort": "53",
-                        "ToPort": "53",
-                        "CidrIp": "{{ network_topology["vpc_cidr"] }}"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "9418",
-                        "ToPort": "9418",
-                        "CidrIp": "0.0.0.0/0"
-                    }
+		    {{bastion_egress_rules|to_json_fragment}}
                 ],
                 "Tags": [
                     {

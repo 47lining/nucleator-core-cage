@@ -46,6 +46,8 @@ role_specification:
               Resource: arn:aws:cloudformation:*
             - Effect: Allow
               Action:
+                - "s3:CreateBucket"
+                - "s3:PutBucketPolicy"
                 - "s3:ListBucket"
                 - "s3:PutObject"
                 - "s3:GetObject"
@@ -64,8 +66,10 @@ role_specification:
                 - "ec2:CreateRouteTable"
                 - "ec2:CreateNetworkAcl"
                 - "ec2:CreateNetworkAclEntry"
+                - "ec2:ReplaceNetworkAclEntry"
                 - "ec2:DeleteNetworkAclEntry"
                 - "ec2:CreateSecurityGroup"
+                - "ec2:DeleteSecurityGroup"
                 - "ec2:CreateRoute"
                 - "ec2:AttachInternetGateway"
                 - "ec2:DescribeRouteTables"

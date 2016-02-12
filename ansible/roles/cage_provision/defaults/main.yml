@@ -13,18 +13,7 @@
 # limitations under the License.
 ---
 
-- hosts: localhost
-  connection: local
-  gather_facts: False
-  pre_tasks:
-  - name: estabish playbook args
-    set_fact:
-      aws_environment_with_rolenames: "{{aws_environment_with_rolenames}}"
-  roles:
-    - config
-    - siteconfig
-    - cage_provision
-  vars:
-    cage_name: "{{cage_name}}"
-    customer_name: "{{customer_name}}"
-    create_bucket: "{{create_bucket}}"
+create_bucket: False
+
+nucleator_cage_bastion_instance_type: t2.micro
+nucleator_cage_nat_instance_type: t2.micro

@@ -1,0 +1,57 @@
+# Copyright 2015 47Lining LLC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+#
+# Nucleator Cage CIDR Whitelist
+#
+# Access to Nucleator Cages will be limited to those CIDRs listed here
+# 
+# If you add a specific whitelist and are using the Nucleator Builder
+# Stackset to manage provisioning & configuration of other Cages, be
+# sure to include the public IP of the NAT instance in the build cage
+# in your whitelist.
+#
+NUCLEATOR_CAGE_CIDR_WHITELIST:
+  - 0.0.0.0/0    # Override with values in siteconfig {{customer}}.yml or
+                 # values in ~/.nucleator/config.yml
+
+# When CIDR_WHITELIST changes, special care must be taken not to:
+#
+# - exceed the max numbe of rules per NACL; or
+# - create conflicting NACL rule numbers
+#
+# Both of these can be avoided by setting
+#     NUCLEATOR_CAGE_REMOVE_INBOUND_PUBLIC_RULES
+# to True for an intervening "cage provision" to force a stack
+# update that removes all inbound NACL rules between updates
+# to the Whitelist. This approach will create some
+# minimal access downtime for your cage
+#
+# As an alternative,
+#     NUCLEATOR_CAGE_CIDR_WHITELIST_INITIAL_RULENUM
+# is provided, so that rules can be updated to use a different
+# initial rulenum. This approach avoids conflicting NACL rule numbers
+# and incurs zero downtime, but with more than a small number of
+# whitelist entries (about 4), will likely exhaust the max number of
+# rules per NACL.
+#
+# This is true because, when updating stacks, Cloudformation first
+# creates all required new Resources, then in the
+# "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS" phase it deletes unused
+# resources.
+#
+NUCLEATOR_CAGE_CIDR_WHITELIST_INITIAL_RULENUM: 100
+NUCLEATOR_CAGE_REMOVE_INBOUND_PUBLIC_RULES: False
+NUCLEATOR_CAGE_OPENVPN_ENABLED: False
