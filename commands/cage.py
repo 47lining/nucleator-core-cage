@@ -78,6 +78,7 @@ class Cage(Command):
             "customer_name": customer,
             "create_bucket": create_bucket,
             "verbosity": kwargs.get("verbosity", None),
+            "debug_credentials": kwargs.get("debug_credentials", None),
         }
 
         extra_vars["cage_deleting"]=kwargs.get("cage_deleting", False)
@@ -86,7 +87,7 @@ class Cage(Command):
         command_list.append("account")
         command_list.append("cage")
 
-        cli.obtain_credentials(commands = command_list, cage=cage, customer=customer, verbosity=kwargs.get("verbosity", None))
+        cli.obtain_credentials(commands = command_list, cage=cage, customer=customer, verbosity=kwargs.get("verbosity", None), debug_credentials=kwargs.get("debug_credentials", None))
 
         return cli.safe_playbook(self.get_command_playbook("cage_provision.yml"),
                                  is_static=True, # do not use dynamic inventory script, credentials may not be available
@@ -107,6 +108,7 @@ class Cage(Command):
         limit_stackset_instance = kwargs.get("limit_stackset_instance", None)
         list_hosts = kwargs.get("list_hosts", None)
         verbosity = kwargs.get("verbosity", None)
+        debug_credentials =  kwargs.get("debug_credentials", None)
 
         if cage is None or customer is None:
             raise ValueError("cage and customer must be specified")
@@ -118,6 +120,7 @@ class Cage(Command):
             "limit_stackset_instance": limit_stackset_instance,
             "list_hosts": list_hosts,
             "verbosity": verbosity,
+            "debug_credentials": debug_credentials,
             "restart_nat": restart_nat,
         }
 
@@ -126,7 +129,7 @@ class Cage(Command):
 
         inventory_manager_rolename = "NucleatorCageInventoryManager"
 
-        cli.obtain_credentials(commands = command_list, cage=cage, customer=customer, verbosity=kwargs.get("verbosity", None)) # pushes credentials into environment
+        cli.obtain_credentials(commands = command_list, cage=cage, customer=customer, verbosity=verbosity, debug_credentials=debug_credentials) # pushes credentials into environment
 
         return cli.safe_playbook(
             self.get_command_playbook("cage_configure.yml"),
