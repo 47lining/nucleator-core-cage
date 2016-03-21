@@ -31,7 +31,7 @@
   ec2_key:
     name: "{{ keypair_name }}"
     region: "{{ aws_region }}"
-  environment: role_credentials
+  environment: "{{role_credentials}}"
   register: create_key
 
 - name: set key_material from resulting key

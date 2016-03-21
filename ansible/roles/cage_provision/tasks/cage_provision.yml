@@ -45,7 +45,7 @@
       ServiceRole: "NucleatorCageServiceRunner"
       CreateBucket: "{{ create_bucket }}"
     # TODO how will this work with tmp creds?  Does it need to? (I think it does)
-  environment: role_credentials
+  environment: "{{role_credentials}}"
   register: "cage_provision_stack"
 
 - name: show all cloudformation output
