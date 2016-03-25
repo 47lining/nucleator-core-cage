@@ -43,6 +43,7 @@ role_specification:
                 - "cloudformation:UpdateStack"
                 - "cloudformation:DescribeStacks"
                 - "cloudformation:DescribeStackEvents"
+                - "cloudformation:ListStackResources"
               Resource: arn:aws:cloudformation:*
             - Effect: Allow
               Action:
