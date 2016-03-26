@@ -14,6 +14,6 @@
 ---
 
 create_bucket: False
-
+create_s3_endpoint: False
 nucleator_cage_bastion_instance_type: t2.micro
 nucleator_cage_nat_instance_type: t2.micro

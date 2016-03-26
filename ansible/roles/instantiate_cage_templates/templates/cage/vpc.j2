@@ -41,7 +41,12 @@
 	    "Type": "String",
 	    "Default": "False",
 	    "Description": "Set to 'True' to create Elb Logging S3 Bucket & Policy."
-	}	
+	},
+        "CreateS3Endpoint": {
+            "Type": "String",
+            "Default": "False",
+            "Description": "Set to 'True' to create a VPC endpoint to S3."
+        }
     },
     "Conditions": {
 	"CreateBucketCondition": {"Fn::Equals": [{"Ref": "CreateBucket"}, "True"]}
@@ -1080,6 +1085,19 @@
     		    {{ nucleator_common_tags | to_json_fragment }}
                 ]
             }
+        },
+        "VpcToS3Endpoint": {
+          "Type" : "AWS::EC2::VPCEndpoint",
+          "Properties" : {
+{#            "PolicyDocument" : JSON object,  #}
+            "RouteTableIds" : [
+                 { "Ref": "PublicRouteTable" },
+                 { "Ref": "PrivateRouteTable" },
+                 { "Ref": "DatabaseRouteTable" }
+            ],
+            "ServiceName" : "com.amazonaws.{{hostvars.localhost.cage_names[cage_name].region}}.s3",
+            "VpcId" : {"Ref": "VPC"}
+          }
         }
     },
     "Outputs": {

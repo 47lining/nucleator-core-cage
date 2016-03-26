@@ -38,7 +38,7 @@ role_specification:
         policy_document:
           Statement :
             - Effect : Allow
-              Action: 
+              Action:
                 - "cloudformation:CreateStack"
                 - "cloudformation:UpdateStack"
                 - "cloudformation:DescribeStacks"
@@ -54,7 +54,7 @@ role_specification:
                 - "s3:GetObject"
               Resource: arn:aws:s3:::*
             - Effect: Allow
-              Action: 
+              Action:
                 - "ec2:DescribeKeyPairs"
                 - "ec2:CreateKeyPair"
                 - "ec2:CreateInternetGateway"
@@ -91,6 +91,9 @@ role_specification:
                 - "ec2:ModifyInstanceAttribute"
                 - "ec2:DescribeInstances"
                 - "ec2:TerminateInstances"
+                - "ec2:CreateVpcEndpoint"
+                - "ec2:DeleteVpcEndpoint"
+                - "ec2:DescribeVpcEndpoints"
               Resource: '*'
             - Effect: Allow
               Action:
@@ -124,10 +127,10 @@ role_specification:
         policy_document:
           Statement :
             - Effect : Allow
-              Action: 
+              Action:
                 - "ec2:DescribeInstances"
                 - "ec2:DescribeVolumes"
-                - "ec2:DescribeSnapshots"  
+                - "ec2:DescribeSnapshots"
                 - "ec2:StopInstances"
                 - "ec2:StartInstances"
                 - "ec2:CreateTags"
@@ -147,7 +150,7 @@ role_specification:
         policy_document:
           Statement :
             - Effect : Allow
-              Action: 
+              Action:
                 - "cloudformation:DescribeStacks"
                 - "cloudformation:DeleteStack"
                 - "cloudformation:DescribeStackEvents"
@@ -181,6 +184,8 @@ role_specification:
                 - "ec2:DescribeVPCs"
                 - "ec2:ReplaceNetworkAclAssociation"
                 - "ec2:DisassociateAddress"
+                - "ec2:DeleteVpcEndpoint"
+                - "ec2:DescribeVpcEndpoints"
               Resource: '*'
             - Effect: Allow
               Action:
@@ -194,3 +199,8 @@ role_specification:
                 - "rds:DeleteDBSubnetGroup"
                 - "rds:DescribeDBSubnetGroups"
               Resource: arn:aws:rds:*
+            - Effect: Allow
+              Action:
+                - "ec2:DeleteVpcEndpoint"
+                - "ec2:DescribeVpcEndpoints"
+              Resource: '*'

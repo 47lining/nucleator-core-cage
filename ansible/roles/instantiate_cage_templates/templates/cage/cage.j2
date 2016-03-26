@@ -37,11 +37,16 @@
             "Type": "String",
             "Description": "Name of the Role to use to establish an Instance Profile to associate with the instance"
         },
-	"CreateBucket": {
-	    "Type": "String",
-	    "Default": "False",
-	    "Description": "Set to 'True' to create Elb Logging S3 Bucket & Policy."
-	}	
+    	"CreateBucket": {
+    	    "Type": "String",
+    	    "Default": "False",
+    	    "Description": "Set to 'True' to create Elb Logging S3 Bucket & Policy."
+    	},
+        "CreateS3Endpoint": {
+            "Type": "String",
+            "Default": "False",
+            "Description": "Set to 'True' to create a VPC endpoint to S3."
+        }
     },
     "Resources": {
 	"Vpc": {
@@ -66,6 +71,9 @@
 		    },
 		    "CreateBucket": {
 			"Ref": "CreateBucket"
+		    },
+		    "CreateS3Endpoint": {
+			"Ref": "CreateS3Endpoint"
 		    }
 		}
 	    }

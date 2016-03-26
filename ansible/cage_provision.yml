@@ -28,3 +28,4 @@
     cage_name: "{{cage_name}}"
     customer_name: "{{customer_name}}"
     create_bucket: "{{create_bucket}}"
+    create_s3_endpoint: "{{create_s3_endpoint}}"

@@ -41,9 +41,12 @@ class Cage(Command):
         cage_provision=cage_subparsers.add_parser('provision', help="provision a new cage")
         cage_provision.add_argument("--customer", required=True, action=ValidateCustomerAction, help="Name of customer from nucleator config")
         cage_provision.add_argument("--cage", required=True, help="Name of cage from nucleator config")
-        cage_provision.add_argument("--create-bucket", dest='create_bucket', required=False, action='store_true', help="Name of cage from nucleator config")
-        cage_provision.add_argument("--no-create-bucket", dest='create_bucket', required=False, action='store_false', help="Name of cage from nucleator config")
+        cage_provision.add_argument("--create-bucket", dest='create_bucket', required=False, action='store_true', help="Add this argument to create the s3 buckets")
+        cage_provision.add_argument("--no-create-bucket", dest='create_bucket', required=False, action='store_false', help="Add this argument to not create the s3 buckets")
         cage_provision.set_defaults(create_bucket=False)
+        cage_provision.add_argument("--create-s3-endpoint", dest='create_s3_endpoint', required=False, action='store_true', help="Add this argument to create a VPC endpoint for s3")
+        cage_provision.add_argument("--no-create-s3-endpoint", dest='create_s3_endpoint', required=False, action='store_false', help="Add this argument to not create a VPC endpoint for s3")
+        cage_provision.set_defaults(create_s3_endpoint=False)
 
         # configure subcommand
         cage_configure=cage_subparsers.add_parser('configure', help="configure a new cage")
@@ -69,6 +72,7 @@ class Cage(Command):
         cage = kwargs.get("cage", None)
         customer = kwargs.get("customer", None)
         create_bucket = kwargs.get("create_bucket", None)
+        create_s3_endpoint = kwargs.get("create_s3_endpoint", None)
         if cage is None or customer is None:
             raise ValueError("cage and customer must be specified")
         if create_bucket is None:
@@ -77,6 +81,7 @@ class Cage(Command):
             "cage_name": cage,
             "customer_name": customer,
             "create_bucket": create_bucket,
+            "create_s3_endpoint": create_s3_endpoint,
             "verbosity": kwargs.get("verbosity", None),
             "debug_credentials": kwargs.get("debug_credentials", None),
         }
