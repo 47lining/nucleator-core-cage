@@ -13,11 +13,13 @@
 # limitations under the License.
 ---
 
+    # guidance on avoiding ssh race conditions on reboot
+    # https://github.com/ansible/ansible/issues/10616
   - name: restart machine
-    command: shutdown -r 0 "Reboot triggered by Nucleator"
-    sudo: true
-    async: 0
+    shell: sleep 2 && shutdown -r now "Reboot triggered by Nucleator"
+    async: 1
     poll: 0
+    sudo: true
     ignore_errors: true
 
   - name: wait for server to come back
