@@ -93,6 +93,7 @@
     - common
 
 - hosts: MATCH_NUCLEATORGROUP__bastion
+  sudo: yes
   roles:
     - bastion
     - maintain-users
