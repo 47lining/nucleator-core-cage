@@ -27,7 +27,7 @@
   vars:
     cage_name: "{{cage_name}}"
     customer_name: "{{customer_name}}"
-    bastion_hostname: 
+    bastion_hostname:
   tasks:
     - name: ensure that global dns can resolve cage
       command: "dig +noadflag +short SOA {{cage_name}}.{{customer_domain}}"
@@ -77,7 +77,7 @@
     - name: generate ssh config
       bastion_ssh_config:
         dest: "{{nucleator_ssh_config_dir}}"
-        identity_file: "{{ nucleator_configuration_dir}}/{{ hostvars.localhost.keypair_name }}.pem"
+        identity_file: "{{ nucleator_configuration_dir}}/{{ keypair_name }}.pem"
         user: "ec2-user"
         bastion_user: "ec2-user"
 
