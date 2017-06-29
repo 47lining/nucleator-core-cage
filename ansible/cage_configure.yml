@@ -20,6 +20,7 @@
   - name: estabish playbook args
     set_fact:
       aws_environment_with_rolenames: "{{aws_environment_with_rolenames}}"
+
   roles:
     - config
     - siteconfig
@@ -44,23 +45,23 @@
 
     - name: test existence, type and permissions of expected pem file
       stat:
-        path: "{{ nucleator_configuration_dir}}/{{ hostvars.localhost.keypair_name }}.pem"
+        path: "{{ nucleator_configuration_dir}}/{{ keypair_name }}.pem"
         follow: true
       register: pemstat
 
     - name: friendly error if pem doesn't exist or is not a file (following symlinks)
-      fail: "You appear to have a missing private key file.  It is expected to reside at {{ nucleator_configuration_dir}}/{{ hostvars.localhost.keypair_name }}.pem"
+      fail: "You appear to have a missing private key file.  It is expected to reside at {{ nucleator_configuration_dir}}/{{ keypair_name }}.pem"
       when: pemstat.stat.isreg is undefined or pemstat.stat.isreg == False
 
     - name: ensure 0400 permissions on pem to permit usage by ssh
       file:
-        path: "{{ nucleator_configuration_dir}}/{{ hostvars.localhost.keypair_name }}.pem"
+        path: "{{ nucleator_configuration_dir}}/{{ keypair_name }}.pem"
         mode: 0400
 
     - name: ensure that bastion host is accessible via ssh
       check_ssh:
         hostname: "bastion.{{cage_name}}.{{customer_domain}}"
-        key_path: "{{ nucleator_configuration_dir}}/{{ hostvars.localhost.keypair_name }}.pem"
+        key_path: "{{ nucleator_configuration_dir}}/{{ keypair_name }}.pem"
 
 - hosts: tag_NucleatorCage_{{cage_name}}:&tag_NucleatorCustomer_{{customer_name}}
   user: ec2-user
@@ -68,6 +69,7 @@
   gather_facts: False
 
   roles:
+    - siteconfig
     - nucleatorgroups
 
   tasks:
@@ -77,7 +79,7 @@
     - name: generate ssh config
       bastion_ssh_config:
         dest: "{{nucleator_ssh_config_dir}}"
-        identity_file: "{{ nucleator_configuration_dir}}/{{ hostvars.localhost.keypair_name }}.pem"
+        identity_file: "{{ nucleator_configuration_dir}}/{{ keypair_name }}.pem"
         user: "ec2-user"
         bastion_user: "ec2-user"
 
