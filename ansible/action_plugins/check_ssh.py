@@ -16,27 +16,29 @@ from ansible.runner.return_data import ReturnData
 from ansible.utils import parse_kv
 import subprocess
 
+from ansible.plugins.action import ActionBase
 
-class ActionModule(object):
+class ActionModule(ActionBase):
     def __init__(self, runner):
         self.runner = runner
 
     def run(self, conn, tmp, module_name, module_args, inject, complex_args=None, **kwargs):
-        
+        result = super(ActionModule, self).run(tmp, task_vars)
+
         args = {}
         if complex_args:
             args.update(complex_args)
         args.update(parse_kv(module_args))
-        
+
         hostname = args.get("hostname", "null")
         key_path = args.get("key_path", "null")
         failed = True
-        
+
         command = 'ssh -i %s -q -o "StrictHostKeyChecking=no" -o "BatchMode=yes" ec2-user@%s "echo 2>&1" && echo "UP" || echo "DOWN"' % (key_path, hostname)
 
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         output, error = process.communicate()
-        
+
         failed = False
         if output.find("UP") < 0:
             failed = True
@@ -45,6 +47,7 @@ class ActionModule(object):
         if failed:
             message = "Failed to successfully connect via SSH to %s. Please check your SSH configuration." % hostname
 
-        return ReturnData(conn=conn,
-                          comm_ok=True,
-                          result=dict(failed=failed, changed=False, msg=message))
+        result['failed']=failed
+        result['changed']=False
+        result['msg']=message
+        return result

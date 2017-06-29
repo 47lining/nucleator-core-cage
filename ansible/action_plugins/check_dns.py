@@ -15,13 +15,18 @@
 from ansible.runner.return_data import ReturnData
 from ansible.utils import parse_kv
 import socket
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
 
+from ansible.plugins.action import ActionBase
 
-class ActionModule(object):
-    def __init__(self, runner):
-        self.runner = runner
+class ActionModule(ActionBase):
 
-    def run(self, conn, tmp, module_name, module_args, inject, complex_args=None, **kwargs):
+    def run(self, tmp=None, task_vars=None):
+        if task_vars is None:
+            task_vars = dict()
+
+        result = super(ActionModule, self).run(tmp, task_vars)
 
         args = {}
         if complex_args:
@@ -42,6 +47,7 @@ class ActionModule(object):
                       "that records exist for the domains in the hosted zones that were created with the " + \
                       "nucleator cage provision command."
 
-        return ReturnData(conn=conn,
-                          comm_ok=True,
-                          result=dict(failed=failed, changed=False, msg=message))
+        result['failed']=failed
+        result['changed']=False
+        result['msg']=message
+        return result
