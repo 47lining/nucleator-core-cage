@@ -76,13 +76,12 @@ class Cage(Command):
         extra_vars={
             "cage_name": cage,
             "customer_name": customer,
-            "create_bucket": create_bucket,
+            "create_bucket": "True" if create_bucket else "False",
             "verbosity": kwargs.get("verbosity", None),
             "debug_credentials": kwargs.get("debug_credentials", None),
         }
 
         extra_vars["cage_deleting"]=kwargs.get("cage_deleting", False)
-
         command_list = []
         command_list.append("account")
         command_list.append("cage")
